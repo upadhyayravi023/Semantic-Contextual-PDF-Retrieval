@@ -123,14 +123,14 @@ REACT_APP_API_BASE_URL=http://127.0.0.1:5000
 ```
 ## Running the Application
 
-# 🧠 Terminal 1: Run Backend (Flask)
+ 🧠 Terminal 1: Run Backend (Flask)
 ```bash
 cd backend
 .\venv\Scripts\activate   # or source venv/bin/activate
 python app.py
 # Flask server → http://127.0.0.1:5000
 ```
-# 💻 Terminal 2: Run Frontend (React)
+ 💻 Terminal 2: Run Frontend (React)
 ```bash
 cd frontend
 npm start
@@ -139,15 +139,16 @@ npm start
 cd backend
 .\venv\Scripts\activate  # or source venv/bin/activate
 ```
-# Install development dependencies
+ Install development dependencies
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-# Run the test suite
+ Run the test suite
 ```
 pytest -v
 ```
+
 
 
 
