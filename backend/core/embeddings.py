@@ -1,9 +1,14 @@
 import os
+import dotenv
 
+from flask.cli import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from backend import app
-from backend.app import GEMINI_API_KEY
+import logging
+log = logging.getLogger(__name__)
 
+from config.settings import GEMINI_API_KEY
+
+embedding_function = None
 
 def get_embedding_function():
     """Initializes the Gemini embedding function (transfer learning base)."""
@@ -17,6 +22,6 @@ def get_embedding_function():
 
 
         except Exception as e:
-            app.logger.error(f"Error initializing embedding function: {e}")
+            log.logger.error(f"Error initializing embedding function: {e}")
             raise RuntimeError("Could not initialize embedding function.")
     return embedding_function

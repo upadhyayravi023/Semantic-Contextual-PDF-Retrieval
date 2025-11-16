@@ -1,8 +1,10 @@
-from asyncio import log
+import logging
+log = logging.getLogger(__name__)
+
 import io
-from tkinter import Image
+from PIL import Image           # ✅ Correct library
 from colorama import Fore, Style
-import fitz
+import fitz                     # PyMuPDF
 import pdfplumber
 import pytesseract
 
@@ -10,7 +12,9 @@ import pytesseract
 def extract_text_from_pdf(filepath):
     log.info(f"{Fore.CYAN}📄 Starting text extraction from PDF: {filepath}{Style.RESET_ALL}")
     text = ""
+
     try:
+        # ---- Normal PDF text extraction ----
         with pdfplumber.open(filepath) as pdf:
             log.info(f"{Fore.YELLOW}→ PDF has {len(pdf.pages)} pages{Style.RESET_ALL}")
             for i, page in enumerate(pdf.pages):
@@ -20,15 +24,17 @@ def extract_text_from_pdf(filepath):
                     text += page_text + "\n"
                 else:
                     log.warning(f"{Fore.MAGENTA}⚠ No text found on page {i+1}{Style.RESET_ALL}")
-        
+
+        # ---- Fallback to OCR ----
         if not text.strip():
             log.warning(f"{Fore.RED}⚙️ Falling back to OCR (scanned PDF detected)...{Style.RESET_ALL}")
             text = ""
             doc = fitz.open(filepath)
+
             for page_num in range(len(doc)):
                 page = doc.load_page(page_num)
                 pix = page.get_pixmap()
-                img = Image.open(io.BytesIO(pix.tobytes("png")))
+                img = Image.open(io.BytesIO(pix.tobytes("png")))   # ✔ PIL Image
                 ocr_text = pytesseract.image_to_string(img, lang="eng")
                 text += ocr_text + "\n"
                 log.info(f"{Fore.GREEN}🧠 OCR extracted text from page {page_num+1}{Style.RESET_ALL}")
@@ -39,4 +45,3 @@ def extract_text_from_pdf(filepath):
     except Exception as e:
         log.error(f"{Fore.RED}❌ Error reading PDF: {e}{Style.RESET_ALL}")
         return ""
-

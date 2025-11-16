@@ -1,25 +1,25 @@
-
-from asyncio import log
-from datetime import time
+import logging
+import time
 import os
-from tkinter.ttk import Style
 
-from colorama import Fore
-from flask import jsonify, request
-from backend import app
-from backend.core.embeddings import get_embedding_function
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from flask import jsonify, request, Blueprint
+from config.settings import GEMINI_API_KEY
+from colorama import Fore, Style
 
+from core.embeddings import get_embedding_function
 from langchain_community.vectorstores import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from google import genai
+from langchain_google_genai import ChatGoogleGenerativeAI
 from google.genai.errors import APIError
 
-from backend.core.embeddings import get_embedding_function
 
+log = logging.getLogger(__name__)
 
-@app.route('/query', methods=['POST'])
+vectorstore = None   
+UPLOAD_FOLDER = 'uploads'
+DB_PATH = 'chroma_db'
+query_bp = Blueprint("query_bp", __name__)
+
+@query_bp.route('/query', methods=['POST'])
 def query_document():
     """Handles user query, performs RAG, and returns step-by-step JSON."""
     global vectorstore
@@ -30,12 +30,12 @@ def query_document():
         log.warning(f"{Fore.YELLOW}⚠️ Vectorstore not loaded in memory. Attempting reload...{Style.RESET_ALL}")
         try:
             embedding_func = get_embedding_function()
-            vectorstore = Chroma(persist_directory=app.config['DB_PATH'], embedding_function=embedding_func)
+            vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embedding_func)
             if vectorstore._collection.count() == 0:
                 log.error(f"{Fore.RED}❌ Vectorstore empty. Upload and index a PDF first.{Style.RESET_ALL}")
                 return jsonify({"status": "error", "message": "Vector store is empty. Please upload and index a PDF first."}), 400
             else:
-                log.info(f"{Fore.GREEN}✅ Vectorstore loaded successfully from {app.config['DB_PATH']}{Style.RESET_ALL}")
+                log.info(f"{Fore.GREEN}✅ Vectorstore loaded successfully from {DB_PATH}{Style.RESET_ALL}")
         except RuntimeError as e:
             log.error(f"{Fore.RED}❌ Embedding initialization failed: {e}{Style.RESET_ALL}")
             return jsonify({"status": "error", "message": str(e)}), 500
@@ -81,7 +81,7 @@ def query_document():
 
         # Step 3: Generation
         start_generation = time.time()
-        os.environ["GOOGLE_API_KEY"] = app.GEMINI_API_KEY
+        os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
         llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=1.0)
         response = llm.invoke(prompt)
         final_answer = response.content

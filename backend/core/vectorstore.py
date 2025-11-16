@@ -1,10 +1,12 @@
 from cmath import log
 from datetime import datetime
-from time import time
-from tkinter.ttk import Style
+import time
+import logging
+log = logging.getLogger(__name__)
 
-from colorama import Fore
-from flask import app
+
+from colorama import Fore,Style
+from flask import current_app as app
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -14,10 +16,10 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 from google import genai
 from google.genai.errors import APIError
 
-from backend.core.embeddings import get_embedding_function
+from core.embeddings import get_embedding_function
 
-from backend.core.embeddings import get_embedding_function
-from backend.core.pdf_extractor import extract_text_from_pdf
+from core.embeddings import get_embedding_function
+from core.pdf_extractor import extract_text_from_pdf
 
 
 def initialize_vectorstore(file_path, file_name):
